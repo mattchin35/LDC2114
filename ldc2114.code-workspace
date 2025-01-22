@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../Documents/juliatests"
+		}
+	],
+	"settings": {
+		"julia.environmentPath": "c:\\Users\\mattc\\Documents\\juliatests"
+	}
+}
