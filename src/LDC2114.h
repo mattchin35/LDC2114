@@ -9,7 +9,7 @@
 #define WIRE_WRITE Wire.send
 #endif
 
-#if defined(__SAM3X8E__) // Arduino Due
+#if defined(ARDUINO_ARCH_SAM) || defined(__SAM3X8E__)   // Arduino Due
     typedef volatile RwReg PortReg;
     typedef uint32_t PortMask;
 #define HAVE_PORTREG
@@ -28,16 +28,12 @@
     typedef uint32_t PortMask;
 #endif
 
-#define I2C_ADDR_0   0x2A  // Use this one! 0x2B is only available for the LDC2112
-#define I2C_ADDR_1   0x2B  // Do not use this with the LDC2114
+#define LDC2114_I2C_ADDR_0   0x2A  // Use this one! 0x2B is only available for the LDC2112
+#define LDC2114_I2C_ADDR_1   0x2B  // Do not use this with the LDC2114
 // For LDC2112, address can be 0x2A (default, ADDR = Ground) or 0x2B (ADDR is high, V_DD); for LDC2114, address is 0x2A
 
 //bitmasks
-#define CH0_UNREADCONV 0x0008         //denotes unread CH0 reading in STATUS register
-#define CH1_UNREADCONV 0x0004         //denotes unread CH1 reading in STATUS register
-#define CH2_UNREADCONV 0x0002         //denotes unread CH2 reading in STATUS register
-#define CH3_UNREADCONV 0x0001         //denotes unread CH3 reading in STATUS register
-
+#define LSB_MASK 0x0F  // 00001111, for the 4 least significant bits
 
 // registers - max value 256 (0xFF, unsigned 8 bit int)
 #define LDC2114_STATUS                      0x00
@@ -85,22 +81,23 @@
 class LDC2114 {
 public:
     LDC2114(uint8_t i2cAddress);
-    boolean begin();
+    bool begin(uint8_t gain);
 
-    // test functions, if any
-    uint8_t readDevID();
+    uint16_t readDevID();
+    uint8_t chipReady();
     unsigned long readChannelData(uint8_t channel);
-    void readOutput(uint8_t outputAddress, bool& out0, bool& out1, bool& out2, bool& out3);
+    // void readOutput(uint8_t outputAddress, bool& out0, bool& out1, bool& out2, bool& out3);
+    uint8_t* readOutput(uint8_t outputAddress);
+    uint16_t* readAllData();
 
 private:
     uint8_t _i2caddr;
-    void loadSettings(uint8_t chanMask);
+    bool loadSettings(uint8_t gain);
 //    void setGain(void);
     void write8LDC(uint8_t address, uint8_t data);
     uint8_t read8LDC(uint8_t address);
     uint8_t get_bit(uint8_t num, uint8_t position);
-    uint16_t readDataNSequential(uint8_t lsbAddress);
-    uint16_t readAllData(uint8_t lsbAddress);  
+    uint16_t read16LDC(uint16_t lsbAddress);
 };
 
 #endif //include guard
